@@ -1,0 +1,21 @@
+name: Build
+
+on:
+  push:
+    branch: master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Build kernel
+      id: build
+      run: |
+        docker run --rm --volume $(pwd):/workdir ubuntu:18.04 /bin/bash -c "apt-get update && apt-get install -qq git && cd / && git clone https://github.com/SebastianBar/Kirisakura_OP7Pro_A11 workdir && cd /workdir && ./build_kirisakura_debian.sh"
+
+    - name: Release build
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: ${{ steps.build.outputs.outfile }}
+        token: ${{ secrets.GITHUB_TOKEN }}
