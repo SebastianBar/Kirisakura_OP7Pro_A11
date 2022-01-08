@@ -12,13 +12,15 @@ jobs:
     - name: Build kernel
       id: build
       run: |
-        docker run --rm --volume $(pwd):/workdir ubuntu:18.04 /bin/bash -c "\
-        apt-get -qq update &&\
-        apt-get install -qq git &&\
+        docker run --rm --volume $(pwd):/work barrenechea/android-build-env:latest /bin/bash -c "\
         cd / &&\
-        git clone https://github.com/SebastianBar/Kirisakura_OP7Pro_A11 workdir &&\
-        cd /workdir &&\
+        git clone https://github.com/SebastianBar/Kirisakura_OP7Pro_A11 work &&\
+        cd /work &&\
         ./build_kirisakura_debian.sh"
+
+    - name: List all files within out folder
+      run: ls -alG out/arch/arm64/boot
+      if: always()
 
     - uses: actions/upload-artifact@v2
       with:

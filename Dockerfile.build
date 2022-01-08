@@ -1,0 +1,40 @@
+FROM ubuntu:18.04
+
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get -qq update
+RUN apt-get -qq dist-upgrade
+
+# From https://source.android.com/setup/build/initializing#installing-required-packages-ubuntu-1804
+RUN apt-get -qq install git-core gnupg flex bison build-essential zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 libncurses5 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z1-dev libgl1-mesa-dev libxml2-utils xsltproc unzip fontconfig
+
+# cpio required for something I don't remember, zip for final output, git for cloning
+RUN apt-get -qq install git zip cpio libssl-dev bc binutils binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi
+RUN apt-get -qq autoremove
+
+# Download Google's clang
+RUN curl -s -L -o /tmp/google-clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/clang-r437112b.tar.gz
+# Download gcc-aarch64
+RUN curl -s -L -o /tmp/aosp-gcc-arm64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/ndk-r22.tar.gz
+# Download gcc-arm
+RUN curl -s -L -o /tmp/aosp-gcc-arm.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/tags/ndk-r22.tar.gz
+# Download aosp-gcc-host
+RUN curl -s -L -o /tmp/aosp-gcc-host.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8/+archive/refs/heads/master.tar.gz
+# Download libufdt, required for boot image
+RUN curl -s -L -o /tmp/libufdt.tar.gz https://android.googlesource.com/platform/prebuilts/misc/+archive/refs/heads/master/linux-x86/libufdt.tar.gz
+
+# Create tools directories
+RUN mkdir -p /tools && mkdir -p /tools/google-clang && mkdir -p /tools/aosp-gcc-arm64 && mkdir -p /tools/aosp-gcc-arm && mkdir -p /tools/aosp-gcc-host && mkdir -p /tools/libufdt
+
+# Extract Google's clang
+RUN tar -zxf /tmp/google-clang.tar.gz -C /tools/google-clang
+# Extract gcc-aarch64
+RUN tar -zxf /tmp/aosp-gcc-arm64.tar.gz -C /tools/aosp-gcc-arm64
+# Extract gcc-arm
+RUN tar -zxf /tmp/aosp-gcc-arm.tar.gz -C /tools/aosp-gcc-arm
+# Extract aosp-gcc-host
+RUN tar -zxf /tmp/aosp-gcc-host.tar.gz -C /tools/aosp-gcc-host
+# Extract libufdt
+RUN tar -zxf /tmp/libufdt.tar.gz -C /tools/libufdt
+
+RUN rm -rf /tmp/*.tar.gz
